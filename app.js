@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
       text: taskText,
       completed: false
     };
-
     tasks.push(newTask);
     saveTasks();
     renderTask(newTask);

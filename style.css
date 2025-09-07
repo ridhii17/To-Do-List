@@ -78,6 +78,14 @@ button.delete-btn {
 button.delete-btn:hover {
   background-color: #c0392b;
 }
+li, button {
+  transition: all 0.2s ease;
+}
+.completed {
+  text-decoration: line-through;
+  color: gray;
+  background: #eaeaea;
+}
 
 
 button.edit-btn {
