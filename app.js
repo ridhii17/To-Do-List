@@ -9,14 +9,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const importBtn = document.getElementById("import-btn");
   const importFile = document.getElementById("import-file");
   const searchInput = document.getElementById("search-input");
-  const filterBtns = document.querySelectorAll(".filter-btn");
   const priorityInput = document.getElementById("priority");
   const dueDateInput = document.getElementById("due-date");
   const progressBar = document.getElementById("task-progress");
   const progressText = document.getElementById("progress-text");
   const welcomeMsg = document.getElementById("welcome-msg");
+  const taskDetailsContent = document.getElementById("task-details-content");
+
+  // Chatbot Elements
+  const chatBox = document.getElementById("chat-box");
+  const chatMessages = document.getElementById("chat-messages");
+  const chatInput = document.getElementById("chat-input");
+  const openChatBtn = document.getElementById("open-chat");
+  const closeChatBtn = document.getElementById("close-chat");
 
   let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  let selectedTaskId = null;
 
   // Username
   const username = localStorage.getItem("username") || prompt("Enter your name:") || "User";
@@ -37,7 +45,8 @@ document.addEventListener("DOMContentLoaded", () => {
       text,
       completed: false,
       priority: priorityInput.value,
-      dueDate: dueDateInput.value
+      dueDate: dueDateInput.value,
+      subtasks: []
     };
 
     tasks.push(newTask);
@@ -55,7 +64,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderTask(task) {
     const li = document.createElement("li");
     li.classList.add(task.priority);
+    li.dataset.id = task.id;
     if(task.dueDate && new Date(task.dueDate) < new Date() && !task.completed) li.classList.add("overdue");
+    if(task.completed) li.classList.add("completed");
 
     // Checkbox
     const checkbox = document.createElement("input");
@@ -70,8 +81,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Task text
     const span = document.createElement("span");
-    span.textContent = task.text + (task.dueDate ? ` (Due: ${task.dueDate})` : '') + ` [${task.priority}]`;
-    if(task.completed) li.classList.add("completed");
+    span.textContent = task.text;
+    span.style.cursor = "pointer";
+    span.addEventListener("click", () => showTaskDetails(task));
 
     // Buttons
     const btnContainer = document.createElement("div");
@@ -80,30 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const editBtn = document.createElement("button");
     editBtn.textContent = "Edit";
     editBtn.classList.add("edit-btn");
-    editBtn.addEventListener("click", () => {
-      const input = document.createElement("input");
-      input.type = "text";
-      input.value = task.text;
-      span.replaceWith(input);
-      input.focus();
-      input.addEventListener("blur", () => {
-        task.text = input.value.trim() || task.text;
-        saveTasks();
-        span.textContent = task.text + (task.dueDate ? ` (Due: ${task.dueDate})` : '') + ` [${task.priority}]`;
-        input.replaceWith(span);
-      });
-      input.addEventListener("keypress", e => { if(e.key==="Enter") input.blur(); });
-    });
+    editBtn.addEventListener("click", () => editTask(task, span));
 
     const delBtn = document.createElement("button");
     delBtn.textContent = "Delete";
     delBtn.classList.add("delete-btn");
-    delBtn.addEventListener("click", () => {
-      tasks = tasks.filter(t => t.id !== task.id);
-      saveTasks();
-      li.remove();
-      updateProgress();
-    });
+    delBtn.addEventListener("click", () => deleteTask(task.id, li));
 
     btnContainer.appendChild(editBtn);
     btnContainer.appendChild(delBtn);
@@ -112,6 +106,81 @@ document.addEventListener("DOMContentLoaded", () => {
     li.appendChild(span);
     li.appendChild(btnContainer);
     todoList.appendChild(li);
+  }
+
+  // Edit Task
+  function editTask(task, span) {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = task.text;
+    span.replaceWith(input);
+    input.focus();
+    input.addEventListener("blur", () => {
+      task.text = input.value.trim() || task.text;
+      saveTasks();
+      span.textContent = task.text;
+      input.replaceWith(span);
+    });
+    input.addEventListener("keypress", e => { if(e.key==="Enter") input.blur(); });
+  }
+
+  // Delete Task
+  function deleteTask(id, li) {
+    tasks = tasks.filter(t => t.id !== id);
+    saveTasks();
+    li.remove();
+    taskDetailsContent.innerHTML = "<p>Select a task to view details</p>";
+    updateProgress();
+  }
+
+  // Show Task Details
+  function showTaskDetails(task) {
+    selectedTaskId = task.id;
+    taskDetailsContent.innerHTML = `
+      <h4>${task.text}</h4>
+      <p><strong>Priority:</strong> ${task.priority}</p>
+      <p><strong>Due Date:</strong> ${task.dueDate || "Not set"}</p>
+      <div>
+        <strong>Subtasks:</strong>
+        <ul id="subtasks-list"></ul>
+        <input type="text" id="subtask-input" placeholder="Add subtask" />
+        <button id="add-subtask-btn">Add</button>
+      </div>
+      <button id="save-task-btn">Save</button>
+      <button id="delete-task-btn">Delete</button>
+    `;
+
+    const subtasksList = document.getElementById("subtasks-list");
+    task.subtasks.forEach(st => {
+      const li = document.createElement("li");
+      li.textContent = st;
+      subtasksList.appendChild(li);
+    });
+
+    document.getElementById("add-subtask-btn").addEventListener("click", () => {
+      const input = document.getElementById("subtask-input");
+      const val = input.value.trim();
+      if(val) {
+        task.subtasks.push(val);
+        const li = document.createElement("li");
+        li.textContent = val;
+        subtasksList.appendChild(li);
+        input.value = "";
+        saveTasks();
+      }
+    });
+
+    document.getElementById("save-task-btn").addEventListener("click", () => {
+      saveTasks();
+      todoList.innerHTML = "";
+      tasks.forEach(renderTask);
+      alert("Task saved!");
+    });
+
+    document.getElementById("delete-task-btn").addEventListener("click", () => {
+      const liToRemove = [...todoList.children].find(li => li.dataset.id == task.id);
+      deleteTask(task.id, liToRemove);
+    });
   }
 
   // Save tasks
@@ -123,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tasks = [];
       saveTasks();
       todoList.innerHTML = "";
+      taskDetailsContent.innerHTML = "<p>Select a task to view details</p>";
       updateProgress();
     }
   });
@@ -143,18 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const term = searchInput.value.toLowerCase();
     Array.from(todoList.children).forEach(li => {
       li.style.display = li.textContent.toLowerCase().includes(term) ? "" : "none";
-    });
-  });
-
-  // Filter
-  filterBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const filter = btn.dataset.filter;
-      Array.from(todoList.children).forEach(li => {
-        if(filter==="all") li.style.display = "";
-        else if(filter==="completed") li.style.display = li.querySelector("input[type=checkbox]").checked ? "" : "none";
-        else if(filter==="pending") li.style.display = li.querySelector("input[type=checkbox]").checked ? "none" : "";
-      });
     });
   });
 
@@ -184,12 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Chatbot
-  const chatBox = document.getElementById("chat-box");
-  const chatMessages = document.getElementById("chat-messages");
-  const chatInput = document.getElementById("chat-input");
-  const openChatBtn = document.getElementById("open-chat");
-  const closeChatBtn = document.getElementById("close-chat");
-
   openChatBtn.addEventListener("click", () => chatBox.style.display="flex");
   closeChatBtn.addEventListener("click", () => chatBox.style.display="none");
 
@@ -218,6 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(msg.includes("clear")) return "Use 'Clear All' button to remove all tasks.";
     if(msg.includes("theme")) return "Use the Dark Mode button to switch theme.";
     if(msg.includes("progress") || msg.includes("completed")) return `${tasks.filter(t=>t.completed).length} out of ${tasks.length} tasks are completed.`;
-    return "I can guide you: add, edit, delete, clear, theme, progress.";
+    if(msg.includes("subtask")) return "Click on a task to open details and add subtasks.";
+    return "I can guide you: add, edit, delete, clear, theme, progress, subtasks.";
   }
 });
