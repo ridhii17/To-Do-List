@@ -3,26 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>✨ Advanced To-Do App</title>
+  <title>✨ Pro To-Do App</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="app-container">
 
-    <!-- Sidebar / Left Panel -->
+    <!-- Sidebar -->
     <aside class="sidebar">
       <header>
         <h1 id="welcome-msg">Welcome, User!</h1>
       </header>
 
-      <!-- Search -->
       <section class="search-section">
         <input type="text" id="search-input" placeholder="Search tasks..." />
       </section>
 
-      <!-- Sections -->
-      <section class="sections-list card">
+      <section class="sections-list">
         <h3>Sections</h3>
         <ul>
           <li data-section="today">Today</li>
@@ -31,37 +30,34 @@
         </ul>
       </section>
 
-      <!-- Categories / Tags -->
-      <section class="lists-tags card">
-        <h3>Categories / Tags</h3>
+      <section class="lists-tags">
+        <h3>Categories/Tags</h3>
         <ul id="lists-tags-container"></ul>
-        <input type="text" id="new-tag-input" placeholder="Add new tag" />
-        <button id="add-tag-btn">Add Tag</button>
       </section>
 
-      <!-- Sidebar Actions -->
-      <section class="sidebar-actions card">
-        <button id="import-btn">Import Tasks</button>
-        <button id="export-word-btn">Export Word</button>
+      <section class="sidebar-actions">
         <button id="export-pdf-btn">Export PDF</button>
-        <input type="file" id="import-file" style="display:none">
+        <button id="export-word-btn">Export Word</button>
         <button id="toggle-theme">🌙 Dark Mode</button>
+      </section>
+
+      <section class="calendar-section">
+        <h3>Mini Calendar</h3>
+        <input type="date" id="calendar-date">
       </section>
     </aside>
 
-    <!-- Task List / Center Panel -->
+    <!-- Task List Panel -->
     <main class="task-list-panel">
       <section class="add-task-card card">
-        <input type="text" id="todo-input" placeholder="Enter a task..." aria-label="Task input">
+        <input type="text" id="todo-input" placeholder="Enter task..." />
         <select id="priority">
           <option value="low">Low</option>
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
-        <input type="date" id="due-date" aria-label="Due Date">
-        <select id="category-select">
-          <option value="">Select Category</option>
-        </select>
+        <input type="text" id="category-input" placeholder="Category" />
+        <input type="date" id="due-date" />
         <button id="add-task-btn">Add Task</button>
       </section>
 
@@ -77,14 +73,17 @@
       <section class="action-buttons-card card">
         <button id="clear-all-btn" class="clear-btn">Clear All</button>
       </section>
+
+      <section class="graph-card card">
+        <h3>Productivity Chart</h3>
+        <canvas id="productivity-chart" height="150"></canvas>
+      </section>
     </main>
 
-    <!-- Task Details / Right Panel -->
+    <!-- Task Details Panel -->
     <aside class="task-details-panel card">
       <h3>Task Details</h3>
-      <div id="task-details-content">
-        <p>Select a task to view details</p>
-      </div>
+      <div id="task-details-content"><p>Select a task to view details</p></div>
     </aside>
 
   </div>
