@@ -1,4 +1,4 @@
-/* General reset */
+/* General Reset */
 body {
   font-family: "Poppins", sans-serif;
   background: linear-gradient(135deg, #74ebd5, #9face6);
@@ -6,79 +6,96 @@ body {
   padding: 0;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100vh;
 }
 
-/* Card container */
+/* Container */
 .container {
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
   background: white;
   padding: 25px 20px;
   border-radius: 15px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  margin: 40px 10px;
   animation: fadeIn 0.6s ease-in-out;
 }
 
 /* Heading */
-h1 {
+h1#welcome-msg {
   text-align: center;
   margin-bottom: 20px;
   font-weight: 600;
   color: #2c3e50;
 }
 
-/* Input container */
-.input-container {
+/* Input Section */
+.input-container, .search-filter, .action-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
-#todo-input {
+#todo-input, #search-input, #due-date, select {
   flex: 1;
   padding: 10px;
-  font-size: 16px;
-  border: 2px solid #ddd;
   border-radius: 8px;
+  border: 2px solid #ddd;
+  font-size: 16px;
   transition: 0.3s;
 }
 
-#todo-input:focus {
+#todo-input:focus, #search-input:focus, #due-date:focus, select:focus {
   outline: none;
   border-color: #2e86de;
   box-shadow: 0 0 5px rgba(46,134,222,0.4);
 }
 
-/* Add button */
-#add-task-btn {
-  padding: 10px 15px;
-  font-size: 16px;
-  background-color: #2e86de;
-  color: white;
+/* Buttons */
+button {
+  cursor: pointer;
   border: none;
   border-radius: 8px;
-  cursor: pointer;
+  padding: 8px 12px;
+  font-size: 14px;
   transition: 0.3s;
 }
 
-#add-task-btn:hover {
-  background-color: #1b4f72;
-}
+#add-task-btn { background-color: #2e86de; color: white; }
+#add-task-btn:hover { background-color: #1b4f72; }
 
-/* Task list */
-.task-container {
-  max-height: 300px;
-  overflow-y: auto;
+.clear-btn { background-color: #d35400; color: white; }
+.clear-btn:hover { background-color: #a04000; }
+
+.export-btn { background-color: #27ae60; color: white; }
+.export-btn:hover { background-color: #1e8449; }
+
+.import-btn { background-color: #8e44ad; color: white; }
+.import-btn:hover { background-color: #6c3483; }
+
+#toggle-theme { background-color: #34495e; color: white; }
+#toggle-theme:hover { background-color: #2c3e50; }
+
+/* Progress Bar */
+.progress-container {
   margin-bottom: 15px;
 }
 
-#todo-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+#task-progress {
+  width: 100%;
+  height: 15px;
+  border-radius: 8px;
 }
+
+/* Task List */
+.task-container {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+#todo-list { list-style: none; padding: 0; margin: 0; }
 
 li {
   background: #f9f9f9;
@@ -91,99 +108,96 @@ li {
   transition: 0.3s;
 }
 
-li:hover {
-  background: #f1f1f1;
-}
+li:hover { background: #f1f1f1; }
 
-/* Task text */
 li span {
   flex: 1;
   margin-left: 10px;
-  font-size: 16px;
   word-break: break-word;
 }
 
-.completed span {
-  text-decoration: line-through;
-  color: gray;
-}
+.completed span { text-decoration: line-through; color: gray; background: #eaeaea; }
 
-/* Buttons */
-.task-buttons {
-  display: flex;
-  gap: 8px;
-}
+.task-buttons { display: flex; gap: 8px; }
 
-button.delete-btn {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-}
+button.edit-btn { background-color: #3498db; color: white; }
+button.edit-btn:hover { background-color: #2980b9; }
 
-button.delete-btn:hover {
-  background-color: #c0392b;
-}
+button.delete-btn { background-color: #e74c3c; color: white; }
+button.delete-btn:hover { background-color: #c0392b; }
 
-button.edit-btn {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-}
+input[type="checkbox"] { transform: scale(1.2); cursor: pointer; }
 
-button.edit-btn:hover {
-  background-color: #2980b9;
-}
+/* Dark Mode */
+body.dark { background: #2c3e50; }
+body.dark .container { background: #34495e; color: white; }
+body.dark input, body.dark select { background: #566573; color: white; border: 2px solid #888; }
+body.dark button { color: white; }
 
-/* Clear all button */
-.clear-btn {
-  width: 100%;
-  padding: 10px;
-  background-color: #d35400;
-  color: white;
-  border: none;
+/* Chatbot */
+.chatbot-container { margin-top: 15px; }
+#open-chat { background-color: #16a085; color: white; }
+#open-chat:hover { background-color: #138d75; }
+
+.chat-box {
+  display: none;
+  flex-direction: column;
+  border: 2px solid #16a085;
   border-radius: 8px;
-  cursor: pointer;
-  font-size: 15px;
-  transition: 0.3s;
+  max-height: 300px;
+  background: white;
 }
 
-.clear-btn:hover {
-  background-color: #a04000;
+.chat-header {
+  background-color: #16a085;
+  color: white;
+  padding: 8px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  border-radius: 6px 6px 0 0;
 }
 
-/* Checkbox */
-input[type="checkbox"] {
-  transform: scale(1.2);
-  cursor: pointer;
+.chat-messages {
+  padding: 10px;
+  flex: 1;
+  overflow-y: auto;
+  background: #f9f9f9;
 }
+
+#chat-input {
+  padding: 8px;
+  border-top: 1px solid #ddd;
+  border-radius: 0 0 8px 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#close-chat { cursor: pointer; }
 
 /* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .container {
-    margin: 15px;
-    padding: 20px;
-  }
-
-  #add-task-btn {
-    font-size: 14px;
-    padding: 8px 12px;
-  }
-
-  #todo-input {
-    font-size: 14px;
-  }
-}
+@media(max-width:600px){.container{margin:15px;padding:20px}button{font-size:13px;padding:6px 10px}}
+/* add */
+@media(max-width:400px){.input-container,.search-filter,.action-buttons{flex-direction:column}#todo-input,#search-input,#due-date,select{flex:none;width:100%}li{flex-direction:column;align-items:flex-start}li span{margin-left:0;margin-top:5px}.task-buttons{align-self:flex-end}}
+/* Scrollbar Styling */
+.task-container::-webkit-scrollbar { width: 8px; }
+.task-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 8px; }
+.task-container::-webkit-scrollbar-thumb { background: #888; border-radius: 8px; }
+.task-container::-webkit-scrollbar-thumb:hover { background: #555; }
+body.dark .task-container::-webkit-scrollbar-track { background: #566573; }
+body.dark .task-container::-webkit-scrollbar-thumb { background: #aaa; }
+body.dark .task-container::-webkit-scrollbar-thumb:hover { background: #777; }
+/* Chat Messages */
+.chat-message { margin-bottom: 10px; }
+.chat-message.user { text-align: right; }
+.chat-message.bot { text-align: left; }
+.chat-message p { display: inline-block; padding: 8px 12px; border-radius: 15px; max-width: 80%; }
+.chat-message.user p { background-color: #2e86de; color: white; border-radius: 15px 15px 0 15px; }
+.chat-message.bot p { background-color: #ecf0f1; color: #2c3e50; border-radius: 15px 15px 15px 0; }
+body.dark .chat-message.bot p { background-color: #566573; color: white; }
+body.dark .chat-message.user p { background-color: #2980b9; }
+/* Due Date Styling */
+.due-date { font-size: 12px; color: #888; margin-left: 10px; }
+body.dark .due-date { color: #bbb; }
