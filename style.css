@@ -116,6 +116,18 @@ input[type="checkbox"] {
   margin-right: 10px;
   cursor: pointer;
 }
+/* Task buttons container */
+.task-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Task text span */
+li span {
+  flex: 1;
+  margin-left: 10px;
+}
+
 
 /* add upto */
 
