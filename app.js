@@ -5,26 +5,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const todoList = document.getElementById("todo-list");
   const clearAllBtn = document.getElementById("clear-all-btn");
   const toggleThemeBtn = document.getElementById("toggle-theme");
-  const exportPDFBtn = document.getElementById("export-pdf-btn");
   const exportWordBtn = document.getElementById("export-word-btn");
+  const exportPdfBtn = document.getElementById("export-pdf-btn");
+  const importBtn = document.getElementById("import-btn");
+  const importFile = document.getElementById("import-file");
   const searchInput = document.getElementById("search-input");
-  const filterBtns = document.querySelectorAll(".filter-btn");
   const priorityInput = document.getElementById("priority");
   const dueDateInput = document.getElementById("due-date");
+  const categorySelect = document.getElementById("category-select");
   const progressBar = document.getElementById("task-progress");
   const progressText = document.getElementById("progress-text");
   const welcomeMsg = document.getElementById("welcome-msg");
+  const listsTagsContainer = document.getElementById("lists-tags-container");
+  const newTagInput = document.getElementById("new-tag-input");
+  const addTagBtn = document.getElementById("add-tag-btn");
+
+  // Chatbot
+  const chatBox = document.getElementById("chat-box");
+  const chatMessages = document.getElementById("chat-messages");
+  const chatInput = document.getElementById("chat-input");
+  const openChatBtn = document.getElementById("open-chat");
+  const closeChatBtn = document.getElementById("close-chat");
 
   let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  let tags = JSON.parse(localStorage.getItem("tags")) || [];
 
   // Username
-  const username =
-    localStorage.getItem("username") || prompt("Enter your name:") || "User";
+  const username = localStorage.getItem("username") || prompt("Enter your name:") || "User";
   localStorage.setItem("username", username);
   welcomeMsg.textContent = `Welcome, ${username}!`;
 
-  // Render existing tasks
-  tasks.forEach((task) => renderTask(task));
+  // Render tasks and tags
+  renderAllTasks();
+  renderTags();
   updateProgress();
 
   // Add Task
@@ -38,7 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
       completed: false,
       priority: priorityInput.value,
       dueDate: dueDateInput.value,
-      subtasks: [],
+      category: categorySelect.value,
+      subtasks: []
     };
 
     tasks.push(newTask);
@@ -46,20 +60,24 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTask(newTask);
     todoInput.value = "";
     dueDateInput.value = "";
+    categorySelect.value = "";
     updateProgress();
   }
 
   addTaskBtn.addEventListener("click", addTask);
-  todoInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") addTask();
-  });
+  todoInput.addEventListener("keypress", e => { if(e.key==="Enter") addTask(); });
+
+  // Render All Tasks
+  function renderAllTasks() {
+    todoList.innerHTML = "";
+    tasks.forEach(renderTask);
+  }
 
   // Render Task
   function renderTask(task) {
     const li = document.createElement("li");
     li.classList.add(task.priority);
-    if (task.dueDate && new Date(task.dueDate) < new Date() && !task.completed)
-      li.classList.add("overdue");
+    if(task.dueDate && new Date(task.dueDate) < new Date() && !task.completed) li.classList.add("overdue");
 
     // Checkbox
     const checkbox = document.createElement("input");
@@ -68,50 +86,72 @@ document.addEventListener("DOMContentLoaded", () => {
     checkbox.addEventListener("change", () => {
       task.completed = checkbox.checked;
       li.classList.toggle("completed", task.completed);
-      updateProgress();
       saveTasks();
+      updateProgress();
     });
 
-    // Task text
+    // Task Text
     const span = document.createElement("span");
-    span.textContent =
-      task.text +
-      (task.dueDate ? ` (Due: ${task.dueDate})` : "") +
-      ` [${task.priority}]`;
-    if (task.completed) li.classList.add("completed");
+    span.textContent = `${task.text} ${task.dueDate ? `(Due: ${task.dueDate})` : ''} [${task.priority}] ${task.category ? '['+task.category+']':''}`;
+    if(task.completed) li.classList.add("completed");
+
+    // Subtasks
+    const subtaskContainer = document.createElement("ul");
+    subtaskContainer.classList.add("subtasks");
+    task.subtasks.forEach((sub, idx) => {
+      const subLi = document.createElement("li");
+      const subChk = document.createElement("input");
+      subChk.type="checkbox";
+      subChk.checked=sub.completed;
+      subChk.addEventListener("change",()=>{
+        sub.completed=subChk.checked;
+        saveTasks();
+        updateProgress();
+      });
+      subLi.appendChild(subChk);
+      const subSpan=document.createElement("span");
+      subSpan.textContent=sub.text;
+      subLi.appendChild(subSpan);
+      subtaskContainer.appendChild(subLi);
+    });
+
+    const addSubInput = document.createElement("input");
+    addSubInput.type="text";
+    addSubInput.placeholder="Add subtask";
+    addSubInput.addEventListener("keypress", e=>{
+      if(e.key==="Enter" && addSubInput.value.trim()!==""){
+        const sub = { text:addSubInput.value.trim(), completed:false };
+        task.subtasks.push(sub);
+        saveTasks();
+        renderAllTasks();
+      }
+    });
 
     // Buttons
     const btnContainer = document.createElement("div");
     btnContainer.classList.add("task-buttons");
 
     const editBtn = document.createElement("button");
-    editBtn.textContent = "Edit";
-    editBtn.classList.add("edit-btn");
-    editBtn.addEventListener("click", () => {
-      const input = document.createElement("input");
-      input.type = "text";
-      input.value = task.text;
+    editBtn.textContent="Edit"; editBtn.classList.add("edit-btn");
+    editBtn.addEventListener("click", ()=>{
+      const input=document.createElement("input");
+      input.type="text";
+      input.value=task.text;
       span.replaceWith(input);
       input.focus();
-      input.addEventListener("blur", () => {
-        task.text = input.value.trim() || task.text;
-        span.textContent =
-          task.text +
-          (task.dueDate ? ` (Due: ${task.dueDate})` : "") +
-          ` [${task.priority}]`;
-        input.replaceWith(span);
+      input.addEventListener("blur", ()=>{
+        task.text=input.value.trim() || task.text;
         saveTasks();
+        span.textContent = `${task.text} ${task.dueDate ? `(Due: ${task.dueDate})` : ''} [${task.priority}] ${task.category ? '['+task.category+']':''}`;
+        input.replaceWith(span);
       });
-      input.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") input.blur();
-      });
+      input.addEventListener("keypress", e=>{ if(e.key==="Enter") input.blur(); });
     });
 
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "Delete";
-    delBtn.classList.add("delete-btn");
-    delBtn.addEventListener("click", () => {
-      tasks = tasks.filter((t) => t.id !== task.id);
+    const delBtn=document.createElement("button");
+    delBtn.textContent="Delete"; delBtn.classList.add("delete-btn");
+    delBtn.addEventListener("click", ()=>{
+      tasks = tasks.filter(t=>t.id!==task.id);
       saveTasks();
       li.remove();
       updateProgress();
@@ -120,263 +160,140 @@ document.addEventListener("DOMContentLoaded", () => {
     btnContainer.appendChild(editBtn);
     btnContainer.appendChild(delBtn);
 
-    // Subtasks
-    const subtaskList = document.createElement("ul");
-    subtaskList.classList.add("subtask-list");
-
-    task.subtasks.forEach((sub) => {
-      const subLi = document.createElement("li");
-      const subCheckbox = document.createElement("input");
-      subCheckbox.type = "checkbox";
-      subCheckbox.checked = sub.completed;
-      subCheckbox.addEventListener("change", () => {
-        sub.completed = subCheckbox.checked;
-        subLi.classList.toggle("completed", sub.completed);
-        updateProgress();
-        saveTasks();
-      });
-      const subSpan = document.createElement("span");
-      subSpan.textContent = sub.text;
-      if (sub.completed) subLi.classList.add("completed");
-
-      subLi.appendChild(subCheckbox);
-      subLi.appendChild(subSpan);
-      subtaskList.appendChild(subLi);
-    });
-
-    // Subtask input
-    const subInput = document.createElement("input");
-    subInput.type = "text";
-    subInput.placeholder = "Add Subtask...";
-    subInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter" && subInput.value.trim() !== "") {
-        const newSub = { text: subInput.value.trim(), completed: false };
-        task.subtasks.push(newSub);
-        saveTasks();
-        renderTaskSubtask(newSub, subtaskList, task);
-        subInput.value = "";
-        updateProgress();
-      }
-    });
-    subtaskList.appendChild(subInput);
-
     li.appendChild(checkbox);
     li.appendChild(span);
+    li.appendChild(subtaskContainer);
+    li.appendChild(addSubInput);
     li.appendChild(btnContainer);
-    li.appendChild(subtaskList);
-
     todoList.appendChild(li);
-
-    // Make tasks sortable
-    new Sortable(todoList, {
-      animation: 150,
-      handle: "span",
-      onEnd: (evt) => {
-        const moved = tasks.splice(evt.oldIndex, 1)[0];
-        tasks.splice(evt.newIndex, 0, moved);
-        saveTasks();
-      },
-    });
-
-    // Make subtasks sortable
-    new Sortable(subtaskList, {
-      animation: 100,
-      onEnd: (evt) => {
-        const movedSub = task.subtasks.splice(evt.oldIndex, 1)[0];
-        task.subtasks.splice(evt.newIndex, 0, movedSub);
-        saveTasks();
-        updateProgress();
-      },
-    });
-  }
-
-  function renderTaskSubtask(sub, ul, task) {
-    const li = document.createElement("li");
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = sub.completed;
-    checkbox.addEventListener("change", () => {
-      sub.completed = checkbox.checked;
-      li.classList.toggle("completed", sub.completed);
-      updateProgress();
-      saveTasks();
-    });
-    const span = document.createElement("span");
-    span.textContent = sub.text;
-    if (sub.completed) li.classList.add("completed");
-    li.appendChild(checkbox);
-    li.appendChild(span);
-    ul.insertBefore(li, ul.querySelector("input"));
   }
 
   // Save tasks
-  function saveTasks() {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }
+  function saveTasks() { localStorage.setItem("tasks", JSON.stringify(tasks)); }
 
   // Clear All
-  clearAllBtn.addEventListener("click", () => {
-    if (confirm("Are you sure you want to clear all tasks?")) {
-      tasks = [];
+  clearAllBtn.addEventListener("click", ()=>{
+    if(confirm("Are you sure you want to clear all tasks?")){
+      tasks=[];
       saveTasks();
-      todoList.innerHTML = "";
+      renderAllTasks();
       updateProgress();
     }
   });
 
-  // Theme Toggle
-  toggleThemeBtn.addEventListener("click", () => {
-    document.body.classList.toggle("dark");
-  });
-
   // Update Progress
-  function updateProgress() {
-    let total = tasks.length,
-      completed = tasks.filter((t) => t.completed).length;
-    tasks.forEach(
-      (t) => (completed += t.subtasks.filter((s) => s.completed).length)
-    );
-    let subTotal = tasks.reduce((sum, t) => sum + t.subtasks.length, 0);
-    progressBar.value =
-      total + subTotal ? (completed / (total + subTotal)) * 100 : 0;
-    progressText.textContent = `${completed} / ${
-      total + subTotal
-    } tasks completed`;
+  function updateProgress(){
+    const total = tasks.length + tasks.reduce((acc,t)=>acc+t.subtasks.length,0);
+    const completed = tasks.filter(t=>t.completed).length + tasks.reduce((acc,t)=>acc+t.subtasks.filter(s=>s.completed).length,0);
+    progressBar.value = total ? (completed/total*100) : 0;
+    progressText.textContent = `${completed} / ${total} tasks completed`;
   }
 
   // Search
-  searchInput.addEventListener("input", () => {
-    const term = searchInput.value.toLowerCase();
-    Array.from(todoList.children).forEach((li) => {
-      li.style.display = li.textContent.toLowerCase().includes(term)
-        ? ""
-        : "none";
+  searchInput.addEventListener("input", ()=>{
+    const term=searchInput.value.toLowerCase();
+    Array.from(todoList.children).forEach(li=>{
+      li.style.display=li.textContent.toLowerCase().includes(term) ? "" : "none";
     });
   });
 
-  // Filter
-  filterBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const filter = btn.dataset.filter;
-      Array.from(todoList.children).forEach((li) => {
-        const checkbox = li.querySelector("input[type=checkbox]");
-        if (filter === "all") li.style.display = "";
-        else if (filter === "completed")
-          li.style.display = checkbox.checked ? "" : "none";
-        else if (filter === "pending")
-          li.style.display = checkbox.checked ? "none" : "";
-      });
-    });
-  });
+  // Dark Mode
+  toggleThemeBtn.addEventListener("click", ()=>document.body.classList.toggle("dark"));
 
-  // Export PDF
-  exportPDFBtn.addEventListener("click", () => {
-    const doc = new jsPDF();
-    let y = 10;
-    tasks.forEach((t) => {
-      doc.setFontSize(14);
-      doc.text(
-        `- ${t.text} [${t.priority}] ${
-          t.dueDate ? "(Due: " + t.dueDate + ")" : ""
-        }`,
-        10,
-        y
-      );
-      y += 10;
-      t.subtasks.forEach((s) => {
-        doc.setFontSize(12);
-        doc.text(`   • ${s.text} [${s.completed ? "✔" : "✖"}]`, 10, y);
-        y += 10;
-      });
+  // Tags / Categories
+  function renderTags(){
+    listsTagsContainer.innerHTML="";
+    categorySelect.innerHTML='<option value="">Select Category</option>';
+    tags.forEach(tag=>{
+      const li=document.createElement("li");
+      li.textContent=tag;
+      listsTagsContainer.appendChild(li);
+      const option = document.createElement("option");
+      option.value=tag;
+      option.textContent=tag;
+      categorySelect.appendChild(option);
     });
-    doc.save("tasks.pdf");
+  }
+
+  addTagBtn.addEventListener("click", ()=>{
+    const val=newTagInput.value.trim();
+    if(val && !tags.includes(val)){
+      tags.push(val);
+      localStorage.setItem("tags", JSON.stringify(tags));
+      renderTags();
+      newTagInput.value="";
+    }
   });
 
   // Export Word
-  exportWordBtn.addEventListener("click", () => {
-    let content = "<h1>Tasks</h1><ul>";
-    tasks.forEach((t) => {
-      content += `<li>${t.text} [${t.priority}] ${
-        t.dueDate ? "(Due: " + t.dueDate + ")" : ""
-      }<ul>`;
-      t.subtasks.forEach((s) => {
-        content += `<li>${s.text} [${s.completed ? "✔" : "✖"}]</li>`;
-      });
-      content += "</ul></li>";
+  exportWordBtn.addEventListener("click", ()=>{
+    let htmlContent="<h1>My Tasks</h1><ul>";
+    tasks.forEach(t=>{
+      htmlContent+=`<li>${t.text} [${t.priority}] ${t.category? '['+t.category+']':''} ${t.dueDate? `(Due: ${t.dueDate})`:''}`;
+      if(t.subtasks.length>0){
+        htmlContent+="<ul>";
+        t.subtasks.forEach(st=>{ htmlContent+=`<li>${st.text} ${st.completed? '(Completed)':''}</li>` });
+        htmlContent+="</ul>";
+      }
+      htmlContent+="</li>";
     });
-    content += "</ul>";
-    const blob = new Blob(["\ufeff", content], { type: "application/msword" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "tasks.doc";
-    a.click();
+    htmlContent+="</ul>";
+    const blob=new Blob([htmlContent], {type:"application/msword"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download="tasks.doc"; a.click();
+  });
+
+  // Export PDF using html2pdf.js (needs CDN or local script)
+  exportPdfBtn.addEventListener("click", ()=>{
+    if(typeof html2pdf==="undefined"){ alert("PDF export library missing! Add html2pdf.min.js"); return; }
+    html2pdf().from(todoList).set({margin:0.5, filename:'tasks.pdf'}).save();
+  });
+
+  // Import Tasks
+  importBtn.addEventListener("click", ()=>importFile.click());
+  importFile.addEventListener("change", e=>{
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload=()=>{
+      tasks=JSON.parse(reader.result);
+      saveTasks();
+      renderAllTasks();
+      updateProgress();
+    };
+    reader.readAsText(file);
   });
 
   // Chatbot
-  const chatBox = document.getElementById("chat-box");
-  const chatMessages = document.getElementById("chat-messages");
-  const chatInput = document.getElementById("chat-input");
-  const openChatBtn = document.getElementById("open-chat");
-  const closeChatBtn = document.getElementById("close-chat");
+  openChatBtn.addEventListener("click", ()=>chatBox.style.display="flex");
+  closeChatBtn.addEventListener("click", ()=>chatBox.style.display="none");
 
-  openChatBtn.addEventListener("click", () => (chatBox.style.display = "flex"));
-  closeChatBtn.addEventListener(
-    "click",
-    () => (chatBox.style.display = "none")
-  );
-
-  chatInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter" && chatInput.value.trim() !== "") {
-      const userMsg = chatInput.value.trim();
-      appendChat(`You: ${userMsg}`, "user");
-      appendChat(`Bot: ${getBotResponse(userMsg)}`, "bot");
-      chatInput.value = "";
+  chatInput.addEventListener("keypress", e=>{
+    if(e.key==="Enter" && chatInput.value.trim()!==""){
+      const userMsg=chatInput.value.trim();
+      appendChat(`You: ${userMsg}`,"user");
+      appendChat(`Bot: ${getBotResponse(userMsg)}`,"bot");
+      chatInput.value="";
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
   });
 
-  function appendChat(msg, type) {
-    const div = document.createElement("div");
-    div.textContent = msg;
-    div.style.color = type === "bot" ? "blue" : "black";
+  function appendChat(msg,type){
+    const div=document.createElement("div");
+    div.textContent=msg;
+    div.style.color=type==="bot" ? "blue":"black";
     chatMessages.appendChild(div);
   }
 
-  function getBotResponse(msg) {
-    msg = msg.toLowerCase();
-    if (msg.includes("add"))
-      return "Use the input box or press Enter to add a new task. You can also add subtasks!";
-    if (msg.includes("edit"))
-      return "Click 'Edit' button beside a task to modify it.";
-    if (msg.includes("delete")) return "Click 'Delete' to remove a task.";
-    if (msg.includes("subtask"))
-      return "Type in the 'Add Subtask...' input below a task and press Enter.";
-    if (msg.includes("clear"))
-      return "Use 'Clear All' button to remove all tasks.";
-    if (msg.includes("theme"))
-      return "Use the Dark Mode button to switch theme.";
-    if (msg.includes("progress") || msg.includes("completed"))
-      return `${
-        tasks.filter((t) => t.completed).length
-      } tasks completed so far.`;
-    return `I can guide you: add, edit, delete, subtasks, clear, theme, progress.`;
+  function getBotResponse(msg){
+    msg=msg.toLowerCase();
+    if(msg.includes("add")) return "You can type your task in input box and click Add Task button.";
+    if(msg.includes("edit")) return "Click the Edit button beside a task to modify it.";
+    if(msg.includes("delete")) return "Click Delete to remove a task.";
+    if(msg.includes("subtask")) return "You can add subtasks by typing below each task input.";
+    if(msg.includes("progress") || msg.includes("completed")) return `${tasks.filter(t=>t.completed).length} out of ${tasks.length} tasks are completed.`;
+    if(msg.includes("priority")) return "Tasks are color-coded by priority: Low (Green), Medium (Yellow), High (Red).";
+    return "I can guide you: add, edit, delete, subtask, progress, priority, theme.";
   }
+
 });
-// Responsive adjustments
-window.addEventListener("resize", () => {
-  const chatBox = document.getElementById("chat-box");
-  if (window.innerWidth < 400) {
-    chatBox.style.width = "90vw";
-    chatBox.style.right = "5vw";
-  } else {
-    chatBox.style.width = "300px";
-    chatBox.style.right = "20px";
-  }
-});
-// Initial adjustment
-if (window.innerWidth < 400) {
-  const chatBox = document.getElementById("chat-box");
-  chatBox.style.width = "90vw";
-  chatBox.style.right = "5vw";
-}
+// End of app.js
