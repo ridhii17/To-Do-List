@@ -6,7 +6,7 @@
   <title>Professional To-Do List</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <!-- jsPDF for PDF export -->
+  <!-- jsPDF CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
@@ -17,11 +17,9 @@
       <header>
         <h1 id="welcome-msg">Welcome, User!</h1>
       </header>
-
       <section class="search-section">
         <input type="text" id="search-input" placeholder="Search tasks..." />
       </section>
-
       <section class="sections-list">
         <h3>Sections</h3>
         <ul>
@@ -30,15 +28,12 @@
           <li data-section="calendar">Calendar</li>
         </ul>
       </section>
-
       <section class="lists-tags">
         <h3>Lists & Tags</h3>
         <ul id="lists-tags-container"></ul>
       </section>
-
       <section class="sidebar-actions">
         <button id="import-btn">Import Tasks</button>
-        <button id="export-json-btn">Export JSON</button>
         <button id="export-pdf-btn">Export PDF</button>
         <button id="export-word-btn">Export Word</button>
         <input type="file" id="import-file" style="display:none">
@@ -46,7 +41,7 @@
       </section>
     </aside>
 
-    <!-- Task List -->
+    <!-- Task List Panel -->
     <main class="task-list-panel">
       <section class="add-task-card card">
         <input type="text" id="todo-input" placeholder="Enter a task..." aria-label="Task input">
@@ -73,7 +68,7 @@
       </section>
     </main>
 
-    <!-- Task Details -->
+    <!-- Task Details Panel -->
     <aside class="task-details-panel card">
       <h3>Task Details</h3>
       <div id="task-details-content">
