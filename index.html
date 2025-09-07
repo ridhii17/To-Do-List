@@ -3,23 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Professional To-Do List</title>
+  <title>Advanced To-Do App</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <!-- jsPDF CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
   <div class="app-container">
 
-    <!-- Sidebar -->
+    <!-- Sidebar / Left Panel -->
     <aside class="sidebar">
       <header>
         <h1 id="welcome-msg">Welcome, User!</h1>
       </header>
+
       <section class="search-section">
         <input type="text" id="search-input" placeholder="Search tasks..." />
       </section>
+
       <section class="sections-list">
         <h3>Sections</h3>
         <ul>
@@ -28,20 +29,25 @@
           <li data-section="calendar">Calendar</li>
         </ul>
       </section>
+
       <section class="lists-tags">
-        <h3>Lists & Tags</h3>
+        <h3>Tags</h3>
         <ul id="lists-tags-container"></ul>
       </section>
+
+      <section class="calendar-section card">
+        <h3>Mini Calendar</h3>
+        <div id="mini-calendar"></div>
+      </section>
+
       <section class="sidebar-actions">
-        <button id="import-btn">Import Tasks</button>
         <button id="export-pdf-btn">Export PDF</button>
         <button id="export-word-btn">Export Word</button>
-        <input type="file" id="import-file" style="display:none">
         <button id="toggle-theme">🌙 Dark Mode</button>
       </section>
     </aside>
 
-    <!-- Task List Panel -->
+    <!-- Task List / Center Panel -->
     <main class="task-list-panel">
       <section class="add-task-card card">
         <input type="text" id="todo-input" placeholder="Enter a task..." aria-label="Task input">
@@ -51,6 +57,7 @@
           <option value="high">High</option>
         </select>
         <input type="date" id="due-date" aria-label="Due Date">
+        <input type="text" id="tag-input" placeholder="Tag (optional)">
         <button id="add-task-btn">Add Task</button>
       </section>
 
@@ -68,14 +75,13 @@
       </section>
     </main>
 
-    <!-- Task Details Panel -->
+    <!-- Task Details / Right Panel -->
     <aside class="task-details-panel card">
       <h3>Task Details</h3>
       <div id="task-details-content">
         <p>Select a task to view details</p>
       </div>
     </aside>
-
   </div>
 
   <!-- Chatbot -->
