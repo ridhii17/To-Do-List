@@ -5,7 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const todoList = document.getElementById("todo-list");
   const clearAllBtn = document.getElementById("clear-all-btn");
   const toggleThemeBtn = document.getElementById("toggle-theme");
-  const exportBtn = document.getElementById("export-btn");
+  const exportJsonBtn = document.getElementById("export-json-btn");
+  const exportPdfBtn = document.getElementById("export-pdf-btn");
+  const exportWordBtn = document.getElementById("export-word-btn");
   const importBtn = document.getElementById("import-btn");
   const importFile = document.getElementById("import-file");
   const searchInput = document.getElementById("search-input");
@@ -14,17 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const progressBar = document.getElementById("task-progress");
   const progressText = document.getElementById("progress-text");
   const welcomeMsg = document.getElementById("welcome-msg");
-  const taskDetailsContent = document.getElementById("task-details-content");
-
-  // Chatbot Elements
-  const chatBox = document.getElementById("chat-box");
-  const chatMessages = document.getElementById("chat-messages");
-  const chatInput = document.getElementById("chat-input");
-  const openChatBtn = document.getElementById("open-chat");
-  const closeChatBtn = document.getElementById("close-chat");
+  const taskDetails = document.getElementById("task-details-content");
 
   let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-  let selectedTaskId = null;
 
   // Username
   const username = localStorage.getItem("username") || prompt("Enter your name:") || "User";
@@ -64,9 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderTask(task) {
     const li = document.createElement("li");
     li.classList.add(task.priority);
-    li.dataset.id = task.id;
     if(task.dueDate && new Date(task.dueDate) < new Date() && !task.completed) li.classList.add("overdue");
-    if(task.completed) li.classList.add("completed");
 
     // Checkbox
     const checkbox = document.createElement("input");
@@ -81,9 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Task text
     const span = document.createElement("span");
-    span.textContent = task.text;
-    span.style.cursor = "pointer";
-    span.addEventListener("click", () => showTaskDetails(task));
+    span.textContent = task.text + (task.dueDate ? ` (Due: ${task.dueDate})` : '') + ` [${task.priority}]`;
+    if(task.completed) li.classList.add("completed");
 
     // Buttons
     const btnContainer = document.createElement("div");
@@ -97,10 +88,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const delBtn = document.createElement("button");
     delBtn.textContent = "Delete";
     delBtn.classList.add("delete-btn");
-    delBtn.addEventListener("click", () => deleteTask(task.id, li));
+    delBtn.addEventListener("click", () => {
+      tasks = tasks.filter(t => t.id !== task.id);
+      saveTasks();
+      li.remove();
+      updateProgress();
+      taskDetails.innerHTML = "<p>Select a task to view details</p>";
+    });
+
+    const detailsBtn = document.createElement("button");
+    detailsBtn.textContent = "Details";
+    detailsBtn.classList.add("edit-btn");
+    detailsBtn.addEventListener("click", () => showTaskDetails(task));
 
     btnContainer.appendChild(editBtn);
     btnContainer.appendChild(delBtn);
+    btnContainer.appendChild(detailsBtn);
 
     li.appendChild(checkbox);
     li.appendChild(span);
@@ -118,68 +121,33 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("blur", () => {
       task.text = input.value.trim() || task.text;
       saveTasks();
-      span.textContent = task.text;
+      span.textContent = task.text + (task.dueDate ? ` (Due: ${task.dueDate})` : '') + ` [${task.priority}]`;
       input.replaceWith(span);
     });
     input.addEventListener("keypress", e => { if(e.key==="Enter") input.blur(); });
   }
 
-  // Delete Task
-  function deleteTask(id, li) {
-    tasks = tasks.filter(t => t.id !== id);
-    saveTasks();
-    li.remove();
-    taskDetailsContent.innerHTML = "<p>Select a task to view details</p>";
-    updateProgress();
-  }
-
-  // Show Task Details
+  // Task Details Panel
   function showTaskDetails(task) {
-    selectedTaskId = task.id;
-    taskDetailsContent.innerHTML = `
-      <h4>${task.text}</h4>
+    taskDetails.innerHTML = `
+      <p><strong>Task:</strong> ${task.text}</p>
       <p><strong>Priority:</strong> ${task.priority}</p>
-      <p><strong>Due Date:</strong> ${task.dueDate || "Not set"}</p>
-      <div>
+      <p><strong>Due Date:</strong> ${task.dueDate || "N/A"}</p>
+      <p><strong>Completed:</strong> ${task.completed ? "Yes" : "No"}</p>
+      <div id="subtasks-section">
         <strong>Subtasks:</strong>
-        <ul id="subtasks-list"></ul>
-        <input type="text" id="subtask-input" placeholder="Add subtask" />
-        <button id="add-subtask-btn">Add</button>
+        <ul id="subtasks-list">${task.subtasks.map(st => `<li>${st}</li>`).join("")}</ul>
+        <input type="text" id="new-subtask" placeholder="Add subtask">
+        <button id="add-subtask-btn">Add Subtask</button>
       </div>
-      <button id="save-task-btn">Save</button>
-      <button id="delete-task-btn">Delete</button>
     `;
-
-    const subtasksList = document.getElementById("subtasks-list");
-    task.subtasks.forEach(st => {
-      const li = document.createElement("li");
-      li.textContent = st;
-      subtasksList.appendChild(li);
-    });
-
     document.getElementById("add-subtask-btn").addEventListener("click", () => {
-      const input = document.getElementById("subtask-input");
-      const val = input.value.trim();
+      const val = document.getElementById("new-subtask").value.trim();
       if(val) {
         task.subtasks.push(val);
-        const li = document.createElement("li");
-        li.textContent = val;
-        subtasksList.appendChild(li);
-        input.value = "";
         saveTasks();
+        showTaskDetails(task);
       }
-    });
-
-    document.getElementById("save-task-btn").addEventListener("click", () => {
-      saveTasks();
-      todoList.innerHTML = "";
-      tasks.forEach(renderTask);
-      alert("Task saved!");
-    });
-
-    document.getElementById("delete-task-btn").addEventListener("click", () => {
-      const liToRemove = [...todoList.children].find(li => li.dataset.id == task.id);
-      deleteTask(task.id, liToRemove);
     });
   }
 
@@ -192,8 +160,8 @@ document.addEventListener("DOMContentLoaded", () => {
       tasks = [];
       saveTasks();
       todoList.innerHTML = "";
-      taskDetailsContent.innerHTML = "<p>Select a task to view details</p>";
       updateProgress();
+      taskDetails.innerHTML = "<p>Select a task to view details</p>";
     }
   });
 
@@ -216,10 +184,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Export / Import
-  exportBtn.addEventListener("click", () => {
-    const dataStr = JSON.stringify(tasks, null, 2);
-    const blob = new Blob([dataStr], {type: "application/json"});
+  // Export JSON
+  exportJsonBtn.addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(tasks,null,2)], {type:"application/json"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -227,6 +194,43 @@ document.addEventListener("DOMContentLoaded", () => {
     a.click();
   });
 
+  // Export PDF
+  exportPdfBtn.addEventListener("click", () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("My Tasks", 14, 20);
+    tasks.forEach((task, index) => {
+      const status = task.completed ? "✔ Completed" : "⏳ Pending";
+      doc.setFontSize(12);
+      doc.text(`${index+1}. ${task.text} [${task.priority}] (Due: ${task.dueDate || "N/A"}) - ${status}`, 14, 30 + index*10);
+      if(task.subtasks.length){
+        task.subtasks.forEach((st,i)=>{doc.text(`   - ${st}`, 18, 35 + index*10 + i*8)});
+      }
+    });
+    doc.save("tasks.pdf");
+  });
+
+  // Export Word
+  exportWordBtn.addEventListener("click", () => {
+    let content = "<h1>My Tasks</h1>";
+    tasks.forEach((task,index)=>{
+      content += `<p>${index+1}. ${task.text} [${task.priority}] (Due: ${task.dueDate || "N/A"}) - ${task.completed ? "✔ Completed" : "⏳ Pending"}</p>`;
+      if(task.subtasks.length){
+        content += "<ul>";
+        task.subtasks.forEach(st=>content+=`<li>${st}</li>`);
+        content += "</ul>";
+      }
+    });
+    const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "tasks.doc";
+    a.click();
+  });
+
+  // Import
   importBtn.addEventListener("click", () => importFile.click());
   importFile.addEventListener("change", e => {
     const file = e.target.files[0];
@@ -242,35 +246,41 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Chatbot
+  const chatBox = document.getElementById("chat-box");
+  const chatMessages = document.getElementById("chat-messages");
+  const chatInput = document.getElementById("chat-input");
+  const openChatBtn = document.getElementById("open-chat");
+  const closeChatBtn = document.getElementById("close-chat");
+
   openChatBtn.addEventListener("click", () => chatBox.style.display="flex");
   closeChatBtn.addEventListener("click", () => chatBox.style.display="none");
 
   chatInput.addEventListener("keypress", e => {
-    if(e.key === "Enter" && chatInput.value.trim() !== "") {
+    if(e.key==="Enter" && chatInput.value.trim()!==""){
       const userMsg = chatInput.value.trim();
-      appendChat(`You: ${userMsg}`, "user");
-      appendChat(`Bot: ${getBotResponse(userMsg)}`, "bot");
-      chatInput.value = "";
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      appendChat(`You: ${userMsg}`,"user");
+      appendChat(`Bot: ${smartBotResponse(userMsg)}`,"bot");
+      chatInput.value="";
+      chatMessages.scrollTop=chatMessages.scrollHeight;
     }
   });
 
-  function appendChat(msg, type) {
+  function appendChat(msg,type){
     const div = document.createElement("div");
     div.textContent = msg;
     div.style.color = type==="bot" ? "blue" : "black";
     chatMessages.appendChild(div);
   }
 
-  function getBotResponse(msg) {
+  function smartBotResponse(msg){
     msg = msg.toLowerCase();
-    if(msg.includes("add")) return "Use the input box and click 'Add Task' to create a new task.";
-    if(msg.includes("edit")) return "Click the 'Edit' button beside a task to modify it.";
+    if(msg.includes("add")) return "To add a task, type your task in the input box and click 'Add Task'.";
+    if(msg.includes("edit")) return "Click the 'Edit' button next to a task to modify it.";
     if(msg.includes("delete")) return "Click 'Delete' to remove a task.";
-    if(msg.includes("clear")) return "Use 'Clear All' button to remove all tasks.";
-    if(msg.includes("theme")) return "Use the Dark Mode button to switch theme.";
+    if(msg.includes("clear")) return "Use 'Clear All' to remove all tasks at once.";
+    if(msg.includes("theme")) return "Click the Dark Mode button to toggle theme.";
     if(msg.includes("progress") || msg.includes("completed")) return `${tasks.filter(t=>t.completed).length} out of ${tasks.length} tasks are completed.`;
-    if(msg.includes("subtask")) return "Click on a task to open details and add subtasks.";
-    return "I can guide you: add, edit, delete, clear, theme, progress, subtasks.";
+    if(msg.includes("export")) return "You can export your tasks in JSON, PDF, or Word format using the buttons in the sidebar.";
+    return "I can guide you: add, edit, delete, clear, theme, progress, export, subtasks.";
   }
 });
