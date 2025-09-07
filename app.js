@@ -1,299 +1,172 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Elements
-  const todoInput = document.getElementById("todo-input");
-  const addTaskBtn = document.getElementById("add-task-btn");
-  const todoList = document.getElementById("todo-list");
-  const clearAllBtn = document.getElementById("clear-all-btn");
-  const toggleThemeBtn = document.getElementById("toggle-theme");
-  const exportWordBtn = document.getElementById("export-word-btn");
-  const exportPdfBtn = document.getElementById("export-pdf-btn");
-  const importBtn = document.getElementById("import-btn");
-  const importFile = document.getElementById("import-file");
-  const searchInput = document.getElementById("search-input");
-  const priorityInput = document.getElementById("priority");
-  const dueDateInput = document.getElementById("due-date");
-  const categorySelect = document.getElementById("category-select");
-  const progressBar = document.getElementById("task-progress");
-  const progressText = document.getElementById("progress-text");
-  const welcomeMsg = document.getElementById("welcome-msg");
-  const listsTagsContainer = document.getElementById("lists-tags-container");
-  const newTagInput = document.getElementById("new-tag-input");
-  const addTagBtn = document.getElementById("add-tag-btn");
+// app.js
 
-  // Chatbot
-  const chatBox = document.getElementById("chat-box");
-  const chatMessages = document.getElementById("chat-messages");
-  const chatInput = document.getElementById("chat-input");
-  const openChatBtn = document.getElementById("open-chat");
-  const closeChatBtn = document.getElementById("close-chat");
+// DOM Elements
+const todoInput = document.getElementById('todo-input');
+const addTaskBtn = document.getElementById('add-task-btn');
+const todoList = document.getElementById('todo-list');
+const clearAllBtn = document.getElementById('clear-all-btn');
+const progressText = document.getElementById('progress-text');
+const taskProgress = document.getElementById('task-progress');
+const exportPdfBtn = document.getElementById('export-pdf-btn');
+const exportWordBtn = document.getElementById('export-word-btn');
+const toggleThemeBtn = document.getElementById('toggle-theme');
+const calendarDate = document.getElementById('calendar-date');
+const chatbotBtn = document.getElementById('open-chat');
+const chatbotBox = document.getElementById('chat-box');
+const closeChatBtn = document.getElementById('close-chat');
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
 
-  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-  let tags = JSON.parse(localStorage.getItem("tags")) || [];
+// Task Data
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
-  // Username
-  const username = localStorage.getItem("username") || prompt("Enter your name:") || "User";
-  localStorage.setItem("username", username);
-  welcomeMsg.textContent = `Welcome, ${username}!`;
+// Theme Data
+const themes = {
+  light: {
+    '--bg-color': '#ffffff',
+    '--text-color': '#000000',
+    '--btn-bg': '#007bff',
+    '--btn-hover': '#0056b3',
+    '--card-bg': '#f8f9fa',
+  },
+  dark: {
+    '--bg-color': '#343a40',
+    '--text-color': '#ffffff',
+    '--btn-bg': '#6c757d',
+    '--btn-hover': '#5a6268',
+    '--card-bg': '#495057',
+  },
+};
 
-  // Render tasks and tags
-  renderAllTasks();
-  renderTags();
-  updateProgress();
-
-  // Add Task
-  function addTask() {
-    const text = todoInput.value.trim();
-    if (!text) return;
-
-    const newTask = {
-      id: Date.now(),
-      text,
-      completed: false,
-      priority: priorityInput.value,
-      dueDate: dueDateInput.value,
-      category: categorySelect.value,
-      subtasks: []
-    };
-
-    tasks.push(newTask);
-    saveTasks();
-    renderTask(newTask);
-    todoInput.value = "";
-    dueDateInput.value = "";
-    categorySelect.value = "";
-    updateProgress();
-  }
-
-  addTaskBtn.addEventListener("click", addTask);
-  todoInput.addEventListener("keypress", e => { if(e.key==="Enter") addTask(); });
-
-  // Render All Tasks
-  function renderAllTasks() {
-    todoList.innerHTML = "";
-    tasks.forEach(renderTask);
-  }
-
-  // Render Task
-  function renderTask(task) {
-    const li = document.createElement("li");
-    li.classList.add(task.priority);
-    if(task.dueDate && new Date(task.dueDate) < new Date() && !task.completed) li.classList.add("overdue");
-
-    // Checkbox
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = task.completed;
-    checkbox.addEventListener("change", () => {
-      task.completed = checkbox.checked;
-      li.classList.toggle("completed", task.completed);
-      saveTasks();
-      updateProgress();
-    });
-
-    // Task Text
-    const span = document.createElement("span");
-    span.textContent = `${task.text} ${task.dueDate ? `(Due: ${task.dueDate})` : ''} [${task.priority}] ${task.category ? '['+task.category+']':''}`;
-    if(task.completed) li.classList.add("completed");
-
-    // Subtasks
-    const subtaskContainer = document.createElement("ul");
-    subtaskContainer.classList.add("subtasks");
-    task.subtasks.forEach((sub, idx) => {
-      const subLi = document.createElement("li");
-      const subChk = document.createElement("input");
-      subChk.type="checkbox";
-      subChk.checked=sub.completed;
-      subChk.addEventListener("change",()=>{
-        sub.completed=subChk.checked;
-        saveTasks();
-        updateProgress();
-      });
-      subLi.appendChild(subChk);
-      const subSpan=document.createElement("span");
-      subSpan.textContent=sub.text;
-      subLi.appendChild(subSpan);
-      subtaskContainer.appendChild(subLi);
-    });
-
-    const addSubInput = document.createElement("input");
-    addSubInput.type="text";
-    addSubInput.placeholder="Add subtask";
-    addSubInput.addEventListener("keypress", e=>{
-      if(e.key==="Enter" && addSubInput.value.trim()!==""){
-        const sub = { text:addSubInput.value.trim(), completed:false };
-        task.subtasks.push(sub);
-        saveTasks();
-        renderAllTasks();
-      }
-    });
-
-    // Buttons
-    const btnContainer = document.createElement("div");
-    btnContainer.classList.add("task-buttons");
-
-    const editBtn = document.createElement("button");
-    editBtn.textContent="Edit"; editBtn.classList.add("edit-btn");
-    editBtn.addEventListener("click", ()=>{
-      const input=document.createElement("input");
-      input.type="text";
-      input.value=task.text;
-      span.replaceWith(input);
-      input.focus();
-      input.addEventListener("blur", ()=>{
-        task.text=input.value.trim() || task.text;
-        saveTasks();
-        span.textContent = `${task.text} ${task.dueDate ? `(Due: ${task.dueDate})` : ''} [${task.priority}] ${task.category ? '['+task.category+']':''}`;
-        input.replaceWith(span);
-      });
-      input.addEventListener("keypress", e=>{ if(e.key==="Enter") input.blur(); });
-    });
-
-    const delBtn=document.createElement("button");
-    delBtn.textContent="Delete"; delBtn.classList.add("delete-btn");
-    delBtn.addEventListener("click", ()=>{
-      tasks = tasks.filter(t=>t.id!==task.id);
-      saveTasks();
-      li.remove();
-      updateProgress();
-    });
-
-    btnContainer.appendChild(editBtn);
-    btnContainer.appendChild(delBtn);
-
-    li.appendChild(checkbox);
-    li.appendChild(span);
-    li.appendChild(subtaskContainer);
-    li.appendChild(addSubInput);
-    li.appendChild(btnContainer);
-    todoList.appendChild(li);
-  }
-
-  // Save tasks
-  function saveTasks() { localStorage.setItem("tasks", JSON.stringify(tasks)); }
-
-  // Clear All
-  clearAllBtn.addEventListener("click", ()=>{
-    if(confirm("Are you sure you want to clear all tasks?")){
-      tasks=[];
-      saveTasks();
-      renderAllTasks();
-      updateProgress();
-    }
+// Initialize Theme
+function setTheme(theme) {
+  const root = document.documentElement;
+  Object.keys(themes[theme]).forEach((key) => {
+    root.style.setProperty(key, themes[theme][key]);
   });
+  localStorage.setItem('theme', theme);
+}
 
-  // Update Progress
-  function updateProgress(){
-    const total = tasks.length + tasks.reduce((acc,t)=>acc+t.subtasks.length,0);
-    const completed = tasks.filter(t=>t.completed).length + tasks.reduce((acc,t)=>acc+t.subtasks.filter(s=>s.completed).length,0);
-    progressBar.value = total ? (completed/total*100) : 0;
-    progressText.textContent = `${completed} / ${total} tasks completed`;
-  }
+// Load Theme
+const savedTheme = localStorage.getItem('theme') || 'light';
+setTheme(savedTheme);
 
-  // Search
-  searchInput.addEventListener("input", ()=>{
-    const term=searchInput.value.toLowerCase();
-    Array.from(todoList.children).forEach(li=>{
-      li.style.display=li.textContent.toLowerCase().includes(term) ? "" : "none";
-    });
-  });
-
-  // Dark Mode
-  toggleThemeBtn.addEventListener("click", ()=>document.body.classList.toggle("dark"));
-
-  // Tags / Categories
-  function renderTags(){
-    listsTagsContainer.innerHTML="";
-    categorySelect.innerHTML='<option value="">Select Category</option>';
-    tags.forEach(tag=>{
-      const li=document.createElement("li");
-      li.textContent=tag;
-      listsTagsContainer.appendChild(li);
-      const option = document.createElement("option");
-      option.value=tag;
-      option.textContent=tag;
-      categorySelect.appendChild(option);
-    });
-  }
-
-  addTagBtn.addEventListener("click", ()=>{
-    const val=newTagInput.value.trim();
-    if(val && !tags.includes(val)){
-      tags.push(val);
-      localStorage.setItem("tags", JSON.stringify(tags));
-      renderTags();
-      newTagInput.value="";
-    }
-  });
-
-  // Export Word
-  exportWordBtn.addEventListener("click", ()=>{
-    let htmlContent="<h1>My Tasks</h1><ul>";
-    tasks.forEach(t=>{
-      htmlContent+=`<li>${t.text} [${t.priority}] ${t.category? '['+t.category+']':''} ${t.dueDate? `(Due: ${t.dueDate})`:''}`;
-      if(t.subtasks.length>0){
-        htmlContent+="<ul>";
-        t.subtasks.forEach(st=>{ htmlContent+=`<li>${st.text} ${st.completed? '(Completed)':''}</li>` });
-        htmlContent+="</ul>";
-      }
-      htmlContent+="</li>";
-    });
-    htmlContent+="</ul>";
-    const blob=new Blob([htmlContent], {type:"application/msword"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a"); a.href=url; a.download="tasks.doc"; a.click();
-  });
-
-  // Export PDF using html2pdf.js (needs CDN or local script)
-  exportPdfBtn.addEventListener("click", ()=>{
-    if(typeof html2pdf==="undefined"){ alert("PDF export library missing! Add html2pdf.min.js"); return; }
-    html2pdf().from(todoList).set({margin:0.5, filename:'tasks.pdf'}).save();
-  });
-
-  // Import Tasks
-  importBtn.addEventListener("click", ()=>importFile.click());
-  importFile.addEventListener("change", e=>{
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload=()=>{
-      tasks=JSON.parse(reader.result);
-      saveTasks();
-      renderAllTasks();
-      updateProgress();
-    };
-    reader.readAsText(file);
-  });
-
-  // Chatbot
-  openChatBtn.addEventListener("click", ()=>chatBox.style.display="flex");
-  closeChatBtn.addEventListener("click", ()=>chatBox.style.display="none");
-
-  chatInput.addEventListener("keypress", e=>{
-    if(e.key==="Enter" && chatInput.value.trim()!==""){
-      const userMsg=chatInput.value.trim();
-      appendChat(`You: ${userMsg}`,"user");
-      appendChat(`Bot: ${getBotResponse(userMsg)}`,"bot");
-      chatInput.value="";
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-  });
-
-  function appendChat(msg,type){
-    const div=document.createElement("div");
-    div.textContent=msg;
-    div.style.color=type==="bot" ? "blue":"black";
-    chatMessages.appendChild(div);
-  }
-
-  function getBotResponse(msg){
-    msg=msg.toLowerCase();
-    if(msg.includes("add")) return "You can type your task in input box and click Add Task button.";
-    if(msg.includes("edit")) return "Click the Edit button beside a task to modify it.";
-    if(msg.includes("delete")) return "Click Delete to remove a task.";
-    if(msg.includes("subtask")) return "You can add subtasks by typing below each task input.";
-    if(msg.includes("progress") || msg.includes("completed")) return `${tasks.filter(t=>t.completed).length} out of ${tasks.length} tasks are completed.`;
-    if(msg.includes("priority")) return "Tasks are color-coded by priority: Low (Green), Medium (Yellow), High (Red).";
-    return "I can guide you: add, edit, delete, subtask, progress, priority, theme.";
-  }
-
+// Toggle Theme
+toggleThemeBtn.addEventListener('click', () => {
+  const newTheme = savedTheme === 'light' ? 'dark' : 'light';
+  setTheme(newTheme);
+  savedTheme = newTheme;
 });
-// End of app.js
+
+// Add Task
+addTaskBtn.addEventListener('click', () => {
+  const taskText = todoInput.value.trim();
+  if (taskText) {
+    const task = {
+      id: Date.now(),
+      text: taskText,
+      completed: false,
+      dueDate: calendarDate.value,
+      category: 'General',
+    };
+    tasks.push(task);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    renderTasks();
+    todoInput.value = '';
+  }
+});
+
+// Render Tasks
+function renderTasks() {
+  todoList.innerHTML = '';
+  tasks.forEach((task) => {
+    const li = document.createElement('li');
+    li.classList.add('task');
+    if (task.completed) li.classList.add('completed');
+    li.innerHTML = `
+      <span>${task.text}</span>
+      <span class="due-date">${task.dueDate}</span>
+      <span class="category">${task.category}</span>
+      <button class="edit-btn">✏️</button>
+      <button class="delete-btn">🗑️</button>
+    `;
+    li.querySelector('.edit-btn').addEventListener('click', () => editTask(task.id));
+    li.querySelector('.delete-btn').addEventListener('click', () => deleteTask(task.id));
+    li.addEventListener('click', () => toggleCompletion(task.id));
+    todoList.appendChild(li);
+  });
+  updateProgress();
+}
+
+// Edit Task
+function editTask(id) {
+  const task = tasks.find((task) => task.id === id);
+  todoInput.value = task.text;
+  calendarDate.value = task.dueDate;
+  // Add logic to update task
+}
+
+// Delete Task
+function deleteTask(id) {
+  tasks = tasks.filter((task) => task.id !== id);
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  renderTasks();
+}
+
+// Toggle Task Completion
+function toggleCompletion(id) {
+  const task = tasks.find((task) => task.id === id);
+  task.completed = !task.completed;
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  renderTasks();
+}
+
+// Update Progress
+function updateProgress() {
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((task) => task.completed).length;
+  progressText.textContent = `${completedTasks} / ${totalTasks} tasks completed`;
+  taskProgress.value = (completedTasks / totalTasks) * 100;
+}
+
+// Clear All Tasks
+clearAllBtn.addEventListener('click', () => {
+  if (confirm('Are you sure you want to clear all tasks?')) {
+    tasks = [];
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    renderTasks();
+  }
+});
+
+// Export to PDF
+exportPdfBtn.addEventListener('click', () => {
+  // Implement PDF export functionality
+});
+
+// Export to Word
+exportWordBtn.addEventListener('click', () => {
+  // Implement Word export functionality
+});
+
+// Chatbot
+chatbotBtn.addEventListener('click', () => {
+  chatbotBox.style.display = 'flex';
+});
+
+closeChatBtn.addEventListener('click', () => {
+  chatbotBox.style.display = 'none';
+});
+
+chatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const userMessage = chatInput.value.trim();
+    if (userMessage) {
+      chatMessages.innerHTML += `<div class="user-msg">${userMessage}</div>`;
+      chatInput.value = '';
+      // Add logic to handle chatbot responses
+    }
+  }
+});
+
+// Initialize
+renderTasks();
