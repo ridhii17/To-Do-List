@@ -9,10 +9,14 @@
 </head>
 <body>
   <div class="container">
-    <h1 id="welcome-msg">Welcome, User!</h1>
 
-    <!-- Input Section -->
-    <div class="input-container">
+    <!-- Header -->
+    <header>
+      <h1 id="welcome-msg">Welcome, User!</h1>
+    </header>
+
+    <!-- Add Task Card -->
+    <div class="card input-card">
       <input type="text" id="todo-input" placeholder="Enter a task..." aria-label="Task input">
       <select id="priority">
         <option value="low">Low</option>
@@ -23,43 +27,46 @@
       <button id="add-task-btn">Add</button>
     </div>
 
-    <!-- Search & Filter -->
-    <div class="search-filter">
-      <input type="text" id="search-input" placeholder="Search tasks...">
-      <button class="filter-btn" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="completed">Completed</button>
-      <button class="filter-btn" data-filter="pending">Pending</button>
+    <!-- Search & Filter Card -->
+    <div class="card search-card">
+      <input type="text" id="search-input" placeholder="Search tasks..." aria-label="Search tasks">
+      <div class="filter-buttons">
+        <button class="filter-btn" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+        <button class="filter-btn" data-filter="pending">Pending</button>
+      </div>
     </div>
 
-    <!-- Progress -->
-    <div class="progress-container">
+    <!-- Progress Bar -->
+    <div class="card progress-card">
       <span id="progress-text">0 / 0 tasks completed</span>
       <progress id="task-progress" value="0" max="100"></progress>
     </div>
 
     <!-- Task List -->
-    <div class="task-container">
-      <ul id="todo-list"></ul>
-    </div>
+    <ul id="todo-list" class="task-list"></ul>
 
     <!-- Action Buttons -->
-    <div class="action-buttons">
-      <button id="clear-all-btn" class="clear-btn">Clear All</button>
-      <button id="export-btn" class="export-btn">Export Tasks</button>
+    <div class="card action-card">
+      <button id="clear-all-btn" class="action-btn">Clear All</button>
+      <button id="export-btn" class="action-btn">Export Tasks</button>
       <input type="file" id="import-file" style="display:none">
-      <button id="import-btn" class="import-btn">Import Tasks</button>
-      <button id="toggle-theme">🌙 Dark Mode</button>
+      <button id="import-btn" class="action-btn">Import Tasks</button>
+      <button id="toggle-theme" class="action-btn">🌙 Dark Mode</button>
     </div>
 
-    <!-- Chatbot Section -->
+    <!-- Chatbot Floating -->
     <div class="chatbot-container">
-      <button id="open-chat">Chat with Assistant</button>
+      <button id="open-chat">💬 Assistant</button>
       <div id="chat-box" class="chat-box">
-        <div class="chat-header">To-Do Assistant <span id="close-chat">✖</span></div>
+        <div class="chat-header">
+          To-Do Assistant <span id="close-chat">✖</span>
+        </div>
         <div class="chat-messages" id="chat-messages"></div>
         <input type="text" id="chat-input" placeholder="Ask me something..." />
       </div>
     </div>
+
   </div>
 
   <script src="app.js"></script>
