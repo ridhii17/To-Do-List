@@ -8,53 +8,71 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <!-- Header / Welcome -->
-    <header>
-      <h1 id="welcome-msg">Welcome, User!</h1>
-    </header>
+  <div class="app-container">
 
-    <!-- Add Task Section -->
-    <section class="card add-task-card">
-      <input type="text" id="todo-input" placeholder="Enter a task..." aria-label="Task input">
-      <select id="priority">
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-      </select>
-      <input type="date" id="due-date" aria-label="Due Date">
-      <button id="add-task-btn">Add Task</button>
-    </section>
+    <!-- Sidebar / Left Panel -->
+    <aside class="sidebar">
+      <header>
+        <h1 id="welcome-msg">Welcome, User!</h1>
+      </header>
+      <section class="search-section">
+        <input type="text" id="search-input" placeholder="Search tasks..." />
+      </section>
+      <section class="sections-list">
+        <h3>Sections</h3>
+        <ul>
+          <li data-section="today">Today</li>
+          <li data-section="upcoming">Upcoming</li>
+          <li data-section="calendar">Calendar</li>
+        </ul>
+      </section>
+      <section class="lists-tags">
+        <h3>Lists & Tags</h3>
+        <ul id="lists-tags-container"></ul>
+      </section>
+      <section class="sidebar-actions">
+        <button id="import-btn">Import Tasks</button>
+        <button id="export-btn">Export Tasks</button>
+        <input type="file" id="import-file" style="display:none">
+        <button id="toggle-theme">🌙 Dark Mode</button>
+      </section>
+    </aside>
 
-    <!-- Search and Filter Section -->
-    <section class="card search-filter-card">
-      <input type="text" id="search-input" placeholder="Search tasks...">
-      <div class="filter-buttons">
-        <button class="filter-btn" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="completed">Completed</button>
-        <button class="filter-btn" data-filter="pending">Pending</button>
+    <!-- Task List / Center Panel -->
+    <main class="task-list-panel">
+      <section class="add-task-card card">
+        <input type="text" id="todo-input" placeholder="Enter a task..." aria-label="Task input">
+        <select id="priority">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+        <input type="date" id="due-date" aria-label="Due Date">
+        <button id="add-task-btn">Add Task</button>
+      </section>
+
+      <section class="progress-card card">
+        <span id="progress-text">0 / 0 tasks completed</span>
+        <progress id="task-progress" value="0" max="100"></progress>
+      </section>
+
+      <section class="task-list-card card">
+        <ul id="todo-list"></ul>
+      </section>
+
+      <section class="action-buttons-card card">
+        <button id="clear-all-btn" class="clear-btn">Clear All</button>
+      </section>
+    </main>
+
+    <!-- Task Details / Right Panel -->
+    <aside class="task-details-panel card">
+      <h3>Task Details</h3>
+      <div id="task-details-content">
+        <p>Select a task to view details</p>
       </div>
-    </section>
+    </aside>
 
-    <!-- Progress Section -->
-    <section class="card progress-card">
-      <span id="progress-text">0 / 0 tasks completed</span>
-      <progress id="task-progress" value="0" max="100"></progress>
-    </section>
-
-    <!-- Task List Section -->
-    <section class="card task-list-card">
-      <ul id="todo-list"></ul>
-    </section>
-
-    <!-- Action Buttons Section -->
-    <section class="card action-buttons-card">
-      <button id="clear-all-btn" class="clear-btn">Clear All</button>
-      <button id="export-btn" class="export-btn">Export Tasks</button>
-      <input type="file" id="import-file" style="display:none">
-      <button id="import-btn" class="import-btn">Import Tasks</button>
-      <button id="toggle-theme" class="theme-btn">🌙 Dark Mode</button>
-    </section>
   </div>
 
   <!-- Chatbot -->
