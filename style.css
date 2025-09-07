@@ -1,24 +1,35 @@
+/* General reset */
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f7f7f7;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #74ebd5, #9face6);
   margin: 0;
   padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
+/* Card container */
 .container {
+  width: 100%;
   max-width: 500px;
-  margin: 50px auto;
   background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  
+  padding: 25px 20px;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  animation: fadeIn 0.6s ease-in-out;
 }
 
+/* Heading */
 h1 {
   text-align: center;
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
+/* Input container */
 .input-container {
   display: flex;
   gap: 10px;
@@ -29,77 +40,142 @@ h1 {
   flex: 1;
   padding: 10px;
   font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  transition: 0.3s;
 }
 
+#todo-input:focus {
+  outline: none;
+  border-color: #2e86de;
+  box-shadow: 0 0 5px rgba(46,134,222,0.4);
+}
+
+/* Add button */
 #add-task-btn {
   padding: 10px 15px;
   font-size: 16px;
   background-color: #2e86de;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 #add-task-btn:hover {
   background-color: #1b4f72;
 }
 
+/* Task list */
+.task-container {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+}
+
 #todo-list {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
-
 
 li {
-  background: #f1f1f1;
+  background: #f9f9f9;
   padding: 10px;
   margin-bottom: 10px;
-  border-radius: 5px;
+  border-radius: 8px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  transition: 0.3s;
 }
 
-.completed {
+li:hover {
+  background: #f1f1f1;
+}
+
+/* Task text */
+li span {
+  flex: 1;
+  margin-left: 10px;
+  font-size: 16px;
+  word-break: break-word;
+}
+
+.completed span {
   text-decoration: line-through;
   color: gray;
+}
+
+/* Buttons */
+.task-buttons {
+  display: flex;
+  gap: 8px;
 }
 
 button.delete-btn {
   background-color: #e74c3c;
   color: white;
   border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border-radius: 6px;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 button.delete-btn:hover {
   background-color: #c0392b;
 }
-/* changes made below */
-li, button {
-  transition: all 0.2s ease;
+
+button.edit-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
 }
-.completed {
-  text-decoration: line-through;
-  color: gray;
-  background: #eaeaea;
+
+button.edit-btn:hover {
+  background-color: #2980b9;
 }
-.task-buttons {
-  display: flex;
-  gap: 8px;
+
+/* Clear all button */
+.clear-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #d35400;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.3s;
 }
-#todo-input:focus {
-  outline: none;
-  border: 2px solid #2e86de;
-  box-shadow: 0 0 5px rgba(46, 134, 222, 0.5);
+
+.clear-btn:hover {
+  background-color: #a04000;
 }
+
+/* Checkbox */
+input[type="checkbox"] {
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
 @media (max-width: 600px) {
   .container {
-    margin: 20px;
-    padding: 15px;
+    margin: 15px;
+    padding: 20px;
   }
 
   #add-task-btn {
@@ -110,43 +186,4 @@ li, button {
   #todo-input {
     font-size: 14px;
   }
-}
-input[type="checkbox"] {
-  transform: scale(1.2);
-  margin-right: 10px;
-  cursor: pointer;
-}
-/* Task buttons container */
-.task-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-/* Task text span */
-li span {
-  flex: 1;
-  margin-left: 10px;
-}
-
-
-/* add upto */
-
-
-
-
-
-
-
-button.edit-btn {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 8px;
-}
-
-button.edit-btn:hover {
-  background-color: #2980b9;
 }

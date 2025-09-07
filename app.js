@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const todoInput = document.getElementById("todo-input");
   const addTaskBtn = document.getElementById("add-task-btn");
   const todoList = document.getElementById("todo-list");
+  const clearAllBtn = document.getElementById("clear-all-btn");
 
   let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
@@ -26,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   addTaskBtn.addEventListener("click", addTask);
 
-  // Allow Enter key to add task
+  // Allow Enter key
   todoInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") addTask();
   });
@@ -97,8 +98,17 @@ document.addEventListener("DOMContentLoaded", () => {
     todoList.appendChild(li);
   }
 
-  // Save tasks to localStorage
+  // Save tasks
   function saveTasks() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }
+
+  // Clear all tasks
+  clearAllBtn.addEventListener("click", () => {
+    if (confirm("Are you sure you want to clear all tasks?")) {
+      tasks = [];
+      saveTasks();
+      todoList.innerHTML = "";
+    }
+  });
 });
